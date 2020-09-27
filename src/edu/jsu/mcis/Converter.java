@@ -26,7 +26,7 @@ public class Converter {
         other whitespace have been added for clarity).  Note the curly braces,
         square brackets, and double-quotes!  These indicate which values should
         be encoded as strings, and which values should be encoded as integers!
-        
+        *
         {
             "colHeaders":["ID","Total","Assignment 1","Assignment 2","Exam 1"],
             "rowHeaders":["111278","111352","111373","111305","111399","111160",
@@ -69,6 +69,47 @@ public class Converter {
             
             // INSERT YOUR CODE HERE
             
+            JSONObject JSONObject = new JSONObject();
+            
+            JSONArray colHeader = new JSONArray();
+            JSONArray rowHeader = new JSONArray();
+            JSONArray currentData;
+            JSONArray data = new JSONArray();
+            
+            String[] currentRow = iterator.next();
+            
+            for(int i = 0; i < currentRow.length; i++){
+                
+                colHeader.add(currentRow[i]);
+            }
+            while(iterator.hasNext()){
+                
+                currentRow = iterator.next();
+                currentData = new JSONArray();
+                
+                for(int i = 0; i < currentRow.length; ++i){
+                    
+                    if(i==0){
+                        
+                        rowHeader.add(currentRow[i]);
+                    }
+                    else{
+                        
+                        int dataInfoToInt = Integer.parseInt(currentRow[i]);
+                        currentData.add(dataInfoToInt);
+                    }
+                }
+                
+                data.add(currentData);
+            }
+            
+            JSONObject.put("columnHeaders", colHeader);
+            JSONObject.put("rowHeaders", rowHeader);
+            JSONObject.put("data", data);
+            
+            
+            results = JSONValue.toJSONString(JSONObject);
+            
         }        
         catch(Exception e) { return e.toString(); }
         
@@ -87,12 +128,51 @@ public class Converter {
             
             // INSERT YOUR CODE HERE
             
+            JSONParser Parser = new JSONParser();
+            JSONObject jsonObject = (JSONObject)Parser.parse(jsonString);
+            
+            JSONArray columns = (JSONArray)jsonObject.get("ColumnHeaders");
+            JSONArray rows = (JSONArray)jsonObject.get("rowHeaders");
+            JSONArray data = (JSONArray)jsonObject.get("data");
+            
+            String[] header = new String[columns.size()];
+            
+            for(int i = 0; i < columns.size(); i++){
+                
+                header[i] = (String) columns.get(i);
+                
+            }
+            
+            csvWriter.writeNext(header);
+            
+            for (int i = 0; i < data.size(); ++i){
+                
+                JSONArray array = (JSONArray) data.get(i);
+                String[] row = new String[array.size()+1];
+                row[0] = (String) rows.get(i);
+                
+                for(int j = 0; j < array.size(); j++){
+                    
+                    row[j+1] = Long.toString((long) array.get(j));
+                                    
+                }
+                
+                csvWriter.writeNext(row);
+                
+            }
+            
+            results = writer.toString();
+            
         }
         
         catch(Exception e) { return e.toString(); }
         
         return results.trim();
         
+    }
+
+    private static JSONParser newParser() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }
